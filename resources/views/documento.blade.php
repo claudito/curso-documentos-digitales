@@ -8,5 +8,6 @@
 </head>
 <body>
     <h1>Pagína de de Bienvenida :D</h1>
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Neque minus repudiandae minima, doloremque nostrum est, quos, magni incidunt praesentium quasi optio aut delectus unde eaque omnis deserunt pariatur animi harum!
 </body>
 </html>
