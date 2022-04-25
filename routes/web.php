@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Models\TipoCertificado;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,9 +39,35 @@ Route::post('documentos/insertar','DocumentoController@insertar');
 Route::post('documentos/actualizar','DocumentoController@actualizar');
 Route::post('documentos/eliminar','DocumentoController@eliminar');
 
-
 #User
 Route::get('users','UserController@index')->name('users.index');
+
+#Certificados
+Route::get('certificados/create','CertificadoController@create')->name('certificados.create');
+Route::post('certificados/store','CertificadoController@store')->name('certificados.store');
+
+#Pruebas
+Route::get('pruebas',function(){
+
+    //Registro Tipo de Certificado
+    TipoCertificado::create(
+        [
+        'nombre'=>'Persona Natural',
+        'descripcion'=>'Certificado para persona Natural con DNI'
+        ]
+    );
+
+    TipoCertificado::create(
+        [
+            'nombre'=>'Persona Juridica',
+            'descripcion'=>'Certificado para Responsable de Persona Juridica'
+        ]
+    );
+
+    dd('okey');
+
+
+});
 
 
 
