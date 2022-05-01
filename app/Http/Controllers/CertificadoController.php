@@ -8,8 +8,8 @@ use App\Models\Certificado;
 
 class CertificadoController extends Controller
 {
-    function index(){
-
+    function index(Request $request){
+        return view('certificado.index');
     }
 
     function create(){

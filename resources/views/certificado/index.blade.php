@@ -4,7 +4,7 @@
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col-md-12">
-
+				index certificado
 			</div>
 		</div>
 	</div>
