@@ -39,6 +39,12 @@
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
 
+    <!-- Font Awesome -->
+    <script src="https://use.fontawesome.com/42a1d7abf8.js"></script>
+
+    <!-- Sweet Alert -->
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
      @yield('scripts')
 </body>
 </html>
