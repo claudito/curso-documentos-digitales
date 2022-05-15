@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\TipoCertificado;
 use App\Models\Certificado;
 use Carbon\Carbon;
+use Greenter\XMLSecLibs\Certificate\X509Certificate;
+use Greenter\XMLSecLibs\Certificate\X509ContentType;
 
 class CertificadoController extends Controller
 {
@@ -33,11 +35,13 @@ class CertificadoController extends Controller
             tipo_certificados.nombre tipo,
             certificados.entidad_emisora,
             certificados.fecha_inicio,
-            certificados.fecha_fin
+            certificados.fecha_fin,
+            certificados.firma
         ")
         ->join('tipo_certificados',function($join){
             $join->on('certificados.tipo_certificado_id','=','tipo_certificados.id');
         })
+        ->where('certificados.eliminado',0)
         ->get();
         return $result;
     }
@@ -54,7 +58,7 @@ class CertificadoController extends Controller
 
     function store(Request $request){
 
-        //dd( $request->nif );
+        //dd( $request->all() );
         Certificado::updateOrCreate([
                 'id'=>$request->id,
             ],
@@ -77,4 +81,45 @@ class CertificadoController extends Controller
             'icon' =>'success'
         ];
     }
+
+    function destroy($id){
+        Certificado::where('id',$id)->update(['eliminado'=>1]);
+        return [
+            'title'=>'Buen Trabajo',
+            'text' =>'Registro Eliminado',
+            'icon' =>'success'
+        ];
+    }
+
+    function storeFirma(Request $request){
+        try {
+            $archivo_pfx = $request->file('archivo_pfx');
+            $pfx         = file_get_contents( $archivo_pfx );
+            $password    = $request->password;
+            $certificate = new X509Certificate($pfx, $password);
+            $pem = $certificate->export(X509ContentType::PEM);
+
+            Certificado::where('id',$request->id)
+            ->update([
+                'pfx'=>$pfx,
+                'password'=>$password,
+                'firma' =>1
+            ]);
+
+            return [
+                'title'=>'Buen Trabajo',
+                'text' =>'Firma Actualizada',
+                'icon' =>'success'
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'title'=>'Error',
+                'text' =>$e->getMessage(),
+                'icon' =>'error'
+            ];
+        }
+    }
+
+
 }

@@ -1,5 +1,4 @@
 @extends('layouts.app')
-
 @section('content')
 	<div class="container-fluid">
 		<div class="row">
@@ -19,7 +18,7 @@
 					<button class="btn btn-primary btn-sm btn-agregar"><i class="fa fa-plus"></i> Agregar</button>
 				</div>
 				<div class="table-responsive">
-					<table id="consulta" class="table">
+					<table id="consulta" class="table" style="font-size: 12px">
 						<thead>
 							<tr>
 								<th>Id</th>
@@ -32,6 +31,7 @@
 								<th>Entidad</th>
 								<th>Fecha de Inicio</th>
 								<th>Fecha de Fin</th>
+								<th>Firma</th>
 								<th></th>
 							</tr>
 						</thead>
@@ -41,6 +41,7 @@
 		</div>
 	</div>
 	@include('certificado.modal.agregar')
+	@include('certificado.modal.agregar-firma')
 @endsection
 @section('scripts')
 	<script>
@@ -71,12 +72,28 @@
 					{data:'fecha_inicio'},
 					{data:'fecha_fin'},
 					{data:null,render:function(data){
+						if( data.firma == 1){
+							return `<i class="fa fa-check-circle-o fa-3x text-success"></i>`;
+						}else{
+							return ``;
+						}
+					},'className':'text-center'},
+					{data:null,render:function(data){
 						return `
+
+						<button data-id="${data.id}" type="button" class="btn btn-secondary btn-sm btn-firma">
+							<i class="fa fa-pencil"></i>
+						</button>
+
 						<button data-id="${data.id}" type="button" class="btn btn-primary btn-sm btn-edit">
 							<i class="fa fa-edit"></i>
 						</button>
+
+						<button data-id="${data.id}" type="button" class="btn btn-danger btn-sm btn-delete">
+							<i class="fa fa-trash"></i>
+						</button>
 						`;
-					}}
+					},}
 				]
 
 			});
@@ -142,7 +159,13 @@
 				data:parametros,
 				dataType:'JSON',
 				beforeSend:function(){
-
+					Swal.fire({
+						title:'Cargando',
+						text :'Espere un momento...',
+						imageUrl:'{{ asset('img/loader.gif') }}',
+						showConfirmButton:false,
+						allowOutsideClick:false
+					});
 				},
 				success:function(data){
 					Swal.fire({
@@ -155,6 +178,105 @@
 
 					$('#modal-agregar').modal('hide');
 					$('#consulta').DataTable().ajax.reload();
+				}
+			});
+
+			e.preventDefault();
+		});
+
+
+		//Eliminar
+		$(document).on('click','.btn-delete',function(e){
+
+			id = $(this).data('id');
+
+			Swal.fire({
+			  title: '¿Estás Seguro?',
+			  text: "EL registro se eliminará de forma permanente",
+			  icon: 'warning',
+			  showCancelButton: true,
+			  confirmButtonColor: '#3085d6',
+			  cancelButtonColor: '#d33',
+			  confirmButtonText: 'Si, estoy seguro.'
+			}).then((result) => {
+			  if (result.isConfirmed) {
+				url_destroy = '{{ route('certificados.destroy',[':id']) }}';
+				url_destroy = url_destroy.replace(':id',id);
+			  	$.ajax({
+			  		url:url_destroy,
+			  		type:'DELETE',
+			  		data:{'_token':'{{ csrf_token() }}'},
+			  		dataType:'JSON',
+			  		beforeSend:function(){
+						Swal.fire({
+							title:'Cargando',
+							text :'Espere un momento...',
+							imageUrl:'{{ asset('img/loader.gif') }}',
+							showConfirmButton:false,
+							allowOutsideClick:false
+						});
+			  		},
+			  		success:function(data){
+						Swal.fire({
+							title:data.title,
+							text :data.text,
+							icon :data.icon,
+							timer:3000,
+							showConfirmButton:false
+						});
+						$('#consulta').DataTable().ajax.reload();
+			  		}
+			  	});
+			  }
+			});
+
+			e.preventDefault();
+		});
+
+		//Cargar Modal Firma
+		$(document).on('click','.btn-firma',function(e){
+			$('#agregar-firma')[0].reset();
+			id = $(this).data('id');
+			$('.id').val('').val(id);
+			$('.modal-title').html(`Actualizar Firma Id: ${id}`);
+			$("#modal-agregar-firma").modal('show');
+
+			e.preventDefault();
+		});
+
+		//Agregar Firma
+		$(document).on('submit','#agregar-firma',function(e){
+
+			parametros = new FormData(this);
+
+			$.ajax({
+				url:'{{ route('certificados.store_firma') }}',
+				type:'POST',
+				data:parametros,
+				dataType:'JSON',
+		        contentType: false,
+		        cache: false,
+		        processData:false,
+				beforeSend:function(){
+					Swal.fire({
+						title:'Cargando',
+						text :'Espere un momento...',
+						imageUrl:'{{ asset('img/loader.gif') }}',
+						showConfirmButton:false,
+						allowOutsideClick:false
+					});
+				},
+				success:function(data){
+					Swal.fire({
+						title:data.title,
+						text :data.text,
+						icon :data.icon,
+						showConfirmButton:true
+					});
+					if( data.icon == 'success' ){
+						$('#modal-agregar-firma').modal('hide');
+						$('#consulta').DataTable().ajax.reload();
+					}
 				}
 			});
 

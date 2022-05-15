@@ -18,6 +18,13 @@
 
     <!-- DataTable -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+
+    <style>
+        table.dataTable td{
+            font-size: 11px;
+            padding: 2px;
+        }
+    </style>
 </head>
 <body>
     <div id="app">

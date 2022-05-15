@@ -29,15 +29,14 @@
 
         Route::get('certificados',function(){
 
-            //dd( asset('certificados/46794282.pfx') );
-            
             //Generación de .pem
-            $pfx = file_get_contents( asset('certificados/46794282.pfx') );
-            $password = 'Hola2022';
+            $certificado = DB::table('certificados')->where('id',23)->first();
+            $pfx         = $certificado->pfx;
+            $password    = $certificado->password;
 
             $certificate = new X509Certificate($pfx, $password);
             $pem = $certificate->export(X509ContentType::PEM);
-
+            
             //Generación del Certificado
             // set additional information in the signature
             $info = array(
@@ -67,7 +66,7 @@
             PDF::setSignatureAppearance(180, 60, 15, 15);
             
             // save pdf file
-            PDF::Output(public_path('hello_world.pdf'), 'F');
+            PDF::Output(public_path('hello_world_prueba.pdf'), 'F');
 
             PDF::reset();
 
