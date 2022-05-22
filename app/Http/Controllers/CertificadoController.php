@@ -52,7 +52,9 @@ class CertificadoController extends Controller
     }
 
     function edit($id){
-        $result = Certificado::where('id',$id)->first();
+        $result = Certificado::selectRaw("
+ id, nif, codigo_pais, nombre_comun, cargo, numero_serie, tipo_certificado_id, entidad_emisora, fecha_inicio, fecha_fin, password, firma, eliminado, created_at, updated_at
+        ")->where('id',$id)->first();
         return $result;
     }
 
@@ -115,7 +117,7 @@ class CertificadoController extends Controller
         } catch (\Exception $e) {
             return [
                 'title'=>'Error',
-                'text' =>$e->getMessage(),
+                'text' =>'Error: '.$e->getMessage(),
                 'icon' =>'error'
             ];
         }
