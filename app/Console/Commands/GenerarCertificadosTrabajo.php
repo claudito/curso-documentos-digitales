@@ -9,6 +9,7 @@ use Greenter\XMLSecLibs\Certificate\X509Certificate;
 use Greenter\XMLSecLibs\Certificate\X509ContentType;
 use Elibyy\TCPDF\Facades\TCPDF as  PdfSignature;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class GenerarCertificadosTrabajo extends Command
 {
@@ -44,7 +45,7 @@ class GenerarCertificadosTrabajo extends Command
     public function handle()
     {
         
-            $empleados = Empleado::limit(5)->get();
+            $empleados = Empleado::limit(1)->where('generado',0)->get();
             
             //Generación de .pem
             $certificado = Certificado::where('id',23)->first();
@@ -56,12 +57,12 @@ class GenerarCertificadosTrabajo extends Command
             $certificate = new X509Certificate($pfx, $password);
             $pem = $certificate->export(X509ContentType::PEM);
             
-            foreach ($empleados as $key => $value) {
+            foreach ($empleados as $key => $empleado) {
                 // set additional information in the signature
                 $info = array(
                     'Name' => 'TCPDF',
-                    'Location' => $value->office,
-                    'Reason' => $value->id.'-'.$value->name,
+                    'Location' => $empleado->office,
+                    'Reason' => $empleado->id.'-'.$empleado->name,
                     'ContactInfo' => 'http://www.tcpdf.org',
                 );
 
@@ -74,7 +75,7 @@ class GenerarCertificadosTrabajo extends Command
 
                 // print a line of text
                 $mes  = $this->mes(date('m'));
-                $text = view('pdf.certificado_trabajo',compact('value','mes','nombre_comun','cargo'));
+                $text = view('pdf.certificado_trabajo',compact('empleado','mes','nombre_comun','cargo'));
 
                 // add view content
                 PdfSignature::writeHTML($text, true, 0, true, 0);
@@ -86,10 +87,24 @@ class GenerarCertificadosTrabajo extends Command
                 PdfSignature::setSignatureAppearance(180, 60, 15, 15);
                 
                 // save pdf file
-                PdfSignature::Output(public_path('certificados/'.$value->id.'-'.$value->name.'.pdf'), 'F');
+                //$filename = 'certificados/'.$empleado->id.'-'.$empleado->name.'.pdf';
+                //PdfSignature::Output(public_path($filename), 'F');
 
+                #Subir a Spaces
+                $filename = 'certificados/'.md5($empleado->id.'-'.$empleado->name).'.pdf'; //Nombre del Pdf
+                $file     = PdfSignature::Output($filename, 'S');//Pdf Generado - Firmado Digitalmente(Binario)
+                //Storage::disk('spaces')->put($filename, $file, 'public');
+                Storage::disk('spaces')->put($filename, $file);
+
+                #Actualización
+                $empleado->update([
+                    'generado'=>1,
+                    'url_documento'=>Storage::disk('spaces')->url($filename)
+                ]);
+
+                #Reset
                 PdfSignature::reset();
-                dump('Documento Generado: '.$value->id.'- '.$value->name);
+                dump('Documento Generado: '.$empleado->id.'- '.$empleado->name);
             }
     }
 

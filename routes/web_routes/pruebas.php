@@ -5,6 +5,7 @@
     use Elibyy\TCPDF\Facades\TCPDF as  PdfSignature;
     use App\Models\Empleado;
     use Carbon\Carbon;
+    use Illuminate\Support\Facades\Storage;
 
     Route::prefix('pruebas')->middleware('auth')->group(function () {
 
@@ -118,6 +119,36 @@
 
             return view('pdf.certificado_trabajo');
         });
+
+        Route::get('spaces',function(){
+
+            $files = Storage::disk('spaces')->files('certificados');
+            dd( $files );
+            foreach ($files as $key => $value) {
+                Storage::disk('spaces')->delete($value);
+            }
+
+        });
+
+        Route::get('spaces_privados',function(){
+
+            $client = Storage::disk('spaces')->getDriver()->getAdapter()->getClient();
+            $bucket = Config::get('filesystems.disks.spaces.bucket');
+            $key    = "certificados/97433f39bb4de408fe15e6f28790d1f3.pdf";
+
+            $command = $client->getCommand('GetObject', [
+                'Bucket' => $bucket,
+                'Key' => $key
+            ]);
+
+            $request      = $client->createPresignedRequest($command, '+3 minutes');
+            $presignedUrl = (string)$request->getUri();
+            echo( $presignedUrl );
+
+
+
+        });
+
 
 
     });
