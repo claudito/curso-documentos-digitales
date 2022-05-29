@@ -25,7 +25,7 @@ Auth::routes();
 
 
 /*Route::get('documentos', function() {
-
+//
     #Bloque A
     dd('prueba');
     #Bloque B
